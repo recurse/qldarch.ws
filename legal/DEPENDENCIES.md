@@ -111,6 +111,18 @@ JARS: commons-beanutils-1.8.3.jar
 Project: Jackson JSON Core
 URL: http://wiki.fasterxml.com/JacksonHome
 License: Apache 2.0
-FILES: jackson-core-2.2.0.jar jackson-databind-2.2.0.jar
-JARS: jackson-core-2.2.0.jar jackson-databind-2.2.0.jar
+FILES: jackson-core-2.2.0.jar jackson-databind-2.2.0.jar jackson-annotations-2.2.0.jar
+JARS: jackson-core-2.2.0.jar jackson-databind-2.2.0.jar jackson-annotations-2.2.0.jar
+
+Project: Jackson JSON Core
+URL: http://mvnrepository.com/artifact/com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider
+License: Apache 2.0
+FILES: jackson-jaxrs-json-provider-2.2.0.jar
+JARS: jackson-jaxrs-json-provider-2.2.0.jar
+
+Project: StringTemplate4
+URL: http://www.stringtemplate.org/
+License: 3-clause BSD
+FILES: dependencies/antlr-3.3-complete.jar  dependencies/ST-4.0.7.jar
+JARS: antlr-3.3-complete.jar  ST-4.0.7.jar
 

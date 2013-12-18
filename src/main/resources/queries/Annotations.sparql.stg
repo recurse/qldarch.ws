@@ -1,0 +1,140 @@
+delimiters "$", "$"
+
+byUtterance(resource, lower, upper) ::= <<
+PREFIX : <http://qldarch.net/ns/rdf/2012-06/terms#>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+select distinct ?s ?p ?o  where {
+    graph <http://qldarch.net/rdf/2013-09/catalog> {
+        ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g.
+    } .
+    graph <http://qldarch.net/ns/rdf/2012-06/terms#>  {
+       ?t rdfs:subClassOf :Relationship .
+    } .
+    graph ?g {
+        ?r a ?t .
+        ?r :evidence ?e .
+        ?e :documentedBy <$resource$> .
+        ?e :timeFrom ?start .
+        ?e :timeTo ?end .
+    } .
+    {
+        graph ?g {
+            ?r ?p ?o .
+            BIND (?r AS ?s) .
+        } .
+    } UNION {
+        graph ?g {
+            ?r :evidence ?s .
+            ?s ?p ?o .
+        } .
+    } .
+    FILTER ( xsd:decimal("$lower$") <= ?end && xsd:decimal("$upper$") >= ?start ) .
+}
+>>
+
+byRelationship(subject, predicate, object) ::= <<
+PREFIX : <http://qldarch.net/ns/rdf/2012-06/terms#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+select distinct ?s ?p ?o  where {
+    graph <http://qldarch.net/rdf/2013-09/catalog> {
+        ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g.
+    } .
+    graph <http://qldarch.net/ns/rdf/2012-06/terms#>  {
+       ?t rdfs:subClassOf :Relationship .
+    } .
+    graph ?g {
+        ?s a ?t .
+        ?s :evidence _:e .
+        $if(subject)$$forSubject(subject)$$endif$
+        $if(predicate)$$forPredicate(predicate)$$endif$
+        $if(object)$$forObject(object)$$endif$
+        ?s ?p ?o .
+    } .
+}
+>>
+
+forSubject(subject) ::= "?s :subject <$subject$> ."
+
+forPredicate(predicate) ::= "?s :predicate <$predicate$> ."
+
+forObject(object) ::= "?s :object <$object$> ."
+
+byEvidenceIds(ids) ::= <<
+PREFIX :<http://qldarch.net/ns/rdf/2012-06/terms#>
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+select distinct ?s ?p ?o where  {
+    graph <http://qldarch.net/rdf/2013-09/catalog> {
+      ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g.
+    } .
+    graph ?g {
+        ?s a :Evidence .
+        ?s ?p ?o .
+    } .
+} BINDINGS ?s { $ids:usingBinding(); separator=" "$ }
+>>
+
+byRelationships(ids) ::= <<
+PREFIX : <http://qldarch.net/ns/rdf/2012-06/terms#>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+select distinct ?s ?p ?o  where {
+    graph <http://qldarch.net/rdf/2013-09/catalog> {
+        ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g1.
+        ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g2.
+    } .
+    graph ?g1 {
+        ?r :evidence ?e .
+    } .
+    graph ?g2 {
+        BIND (?e AS ?s) .
+        ?s ?p ?o .
+    } .
+} BINDINGS ?r { $ids:usingBinding(); separator=" "$ }
+>>
+
+usingBinding(binding) ::= <<
+( <$binding$> )
+>>
+
+unevidencedRelationships() ::= <<
+PREFIX : <http://qldarch.net/ns/rdf/2012-06/terms#>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+select distinct ?r  where {
+    graph <http://qldarch.net/rdf/2013-09/catalog> {
+        ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g1.
+        ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g2.
+    } .
+    graph <http://qldarch.net/ns/rdf/2012-06/terms#>  {
+       ?t rdfs:subClassOf :Relationship .
+    } .
+    {
+        graph ?g1 {
+            ?r a ?t .
+        }
+    } MINUS {
+        graph ?g2 {
+            ?r :evidence _:e .
+        }
+    }
+}
+>>
+
+confirmEvidenceIds(ids) ::= <<
+PREFIX : <http://qldarch.net/ns/rdf/2012-06/terms#>
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+select distinct ?r  where {
+    graph <http://qldarch.net/rdf/2013-09/catalog> {
+        ?u <http://qldarch.net/ns/rdf/2013-09/catalog#hasAnnotationGraph> ?g1.
+    } .
+    graph <http://qldarch.net/ns/rdf/2012-06/terms#>  {
+       ?t rdfs:subClassOf :Evidence .
+    } .
+    graph ?g1 {
+        ?e a ?t .
+        BIND (?e AS ?r) .
+    }
+} BINDINGS ?e { $ids:usingBinding(); separator=" "$ }
+>>
